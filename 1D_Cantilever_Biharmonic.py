@@ -16,11 +16,11 @@ E = fenics.Constant(1.)
 I = fenics.Constant(1.)
 L = 1. ;  H = 0.1 ;  Nx = 200 ; Ny = 4
 # Boundary conditions
-g = fenics.Constant(-0.1) # Displacement at x = 0
-theta = fenics.Constant(2.0) # Angle at x = 0
+g = fenics.Constant(0.0) # Displacement at x = 0
+theta = fenics.Constant(0.0) # Angle at x = 0
 M = fenics.Constant(0.0) # Momentum on the end of the cantilever x = 1
-Q = fenics.Constant(0.0) # Shear Force at x = 1
-f = fenics.Constant(1.0) # Force across the beam
+Q = fenics.Constant(1.0) # Shear Force at x = 1
+f = fenics.Constant(0.0) # Force across the beam
 
 # Penalty parameter
 alpha = E*I
@@ -120,40 +120,45 @@ fenics.plot(boundary_markers, title="Subdomain x = 1")
 fenics.plot(mesh)
 plt.xlim(0.9, 1.01)
 
-
-
-if Two_Dimensional:
-    plt.figure(figsize = (10,3))
-    p = fenics.plot(Phi, title = 'Displacement')
-    plt.colorbar(p)
-
-    plt.figure(figsize = (10,3))
-    p = fenics.plot(Phi.dx(0), title = 'Angle across the cantilever')
-    plt.ylim(-0.1,0.11)
-    plt.colorbar(p)
-    plt.xlim(0, 1)
-    
-    plt.figure(figsize = (10,3))
-    p = fenics.plot(fenics.div(fenics.grad(Phi)), title = 'Moment across the cantilever')
-    plt.colorbar(p)
-
-    plt.figure(figsize = (10,3))
-    p = fenics.plot(fenics.div(fenics.grad(Phi)).dx(0), title = 'Shear Force across the cantilever')
-    plt.colorbar(p)
+if g.values() == 0 and theta.values() == 0 and f.values() == 0 and Q.values() == 0:
+    Phi_Expr= fenics.Expression('0.5*M/E/I*x[0]*x[0]', degree = 2, M = M, E = E, I = I)
+    Analytical = True
+elif g.values() == 0 and theta.values() == 0 and f.values() == 0 and M.values() == 0:
+    Phi_Expr = fenics.Expression('0.5*Q/E/I*(0.3333*x[0]*x[0]*x[0] - x[0]*x[0])', degree = 3, Q = Q, E = E, I = I)
+    Analytical = True
+elif g.values() == 0 and theta.values() == 0 and Q.values() == 0 and M.values() == 0:
+    Phi_Expr = fenics.Expression('0.041666666666666664*f/E/I*(pow(x[0],4) -4*pow(x[0],3) + 6*x[0]*x[0])', degree = 4, f = f, E = E, I = I)    
+    Analytical = True
 else:
-    plt.figure(figsize = (10,3))
-    fenics.plot(Phi, title = 'Displacement')
-    plt.xlim(0, 1)
-    plt.figure(figsize = (10,3))
-    fenics.plot(Phi.dx(0), title = 'Angle across the cantilever')
-    plt.xlim(0, 1)
-    plt.figure(figsize = (10,3))
-    fenics.plot(fenics.div(fenics.grad(Phi)), title = 'Moment across the cantilever')
-    plt.xlim(0, 1)
-    plt.figure(figsize = (10,3))
-    fenics.plot(fenics.div(fenics.grad(Phi)).dx(0), title = 'Shear Force across the cantilever')
-    plt.ylim(-2, 2)
-    plt.xlim(0., 1)
+    Analytical = False
+        
+Phi_Analytical = fenics.project(Phi_Expr, V)
+
+plt.figure(figsize = (10,3))
+fenics.plot(Phi, title = 'Displacement')
+if Analytical:
+    fenics.plot(Phi_Analytical, linestyle = '-.')
+plt.legend(('C/DG', 'Analytical'))    
+plt.xlim(0, 1)
+plt.figure(figsize = (10,3))
+fenics.plot(Phi.dx(0), title = 'Angle across the cantilever')
+if Analytical:
+    fenics.plot(Phi_Analytical.dx(0), linestyle = '-.')
+plt.legend(('C/DG', 'Analytical'))    
+plt.xlim(0, 1)
+plt.figure(figsize = (10,3))
+fenics.plot(fenics.div(fenics.grad(Phi)), title = 'Moment across the cantilever')
+if Analytical:
+    fenics.plot((Phi_Analytical.dx(0)).dx(0), linestyle = '-.')
+plt.legend(('C/DG', 'Analytical'))   
+plt.xlim(0, 1)
+plt.figure(figsize = (10,3))
+fenics.plot(fenics.div(fenics.grad(Phi)).dx(0), title = 'Shear Force across the cantilever')
+if Analytical:
+    fenics.plot(((Phi_Analytical.dx(0)).dx(0)).dx(0), linestyle = '-.')
+plt.legend(('C/DG', 'Analytical'))   
+plt.ylim(-2, 2)
+plt.xlim(0., 1)
 plt.show()
 
 
