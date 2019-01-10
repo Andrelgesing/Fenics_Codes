@@ -20,19 +20,6 @@ theta = fenics.Constant(-0.4) # Angle at x = 0
 M = fenics.Constant(1.0) # Momentum on the end of the cantilever x = 1
 Q = fenics.Constant(2.0) # Shear Force at x = 1
 f = fenics.Constant(5.0) # Force across the beam
-#
-#g = fenics.Constant(0.00) # Displacement at x = 0
-#theta = fenics.Constant(0.0) # Angle at x = 0
-#M = fenics.Constant(0.0) # Momentum on the end of the cantilever x = 1
-#Q = fenics.Constant(0.0) # Shear Force at x = 1
-#f = fenics.Constant(1.0) # Force across the beam
-
-#
-#g = fenics.Constant(0.05) # Displacement at x = 0
-#theta = fenics.Constant(-0.01) # Angle at x = 0
-#M = fenics.Constant(1.0) # Momentum on the end of the cantilever x = 1
-#Q = fenics.Constant(5.4) # Shear Force at x = 1
-#f = fenics.Constant(10.0) # Force across the beam
 
 # Penalty parameter
 alpha = E*I
@@ -96,10 +83,6 @@ for x in mesh.coordinates():
             if bx0.inside(x, True): print('%s is on x = 0' % x)
             if bx1.inside(x, True): print('%s is on x = 1' % x)
 
-
-
-
-
 # Define normal component, mesh size and right-hand side
 h = fenics.CellDiameter(mesh)
 h_avg = (h('+') + h('-'))/2.0
@@ -119,7 +102,6 @@ L = w*f*fenics.dx \
 + E*I*theta*fenics.div(fenics.grad(w))*ds(1) \
 - w*Q*ds(2) \
 - 2*alpha/h*fenics.dot(fenics.grad(w),n)*theta*ds(1)
-
 
 # Solve the variational problem
 Phi = fenics.Function(V)
@@ -192,5 +174,3 @@ plt.xlim(0, 1)
 plt.tight_layout()
 plt.savefig('Static_Shear_Force.pdf')
 plt.show()
-
-
