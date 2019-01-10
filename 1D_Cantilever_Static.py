@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov 19 11:29:27 2018
-
+The variational formulation for the Euler-Bernoulli static equations was 
+implemented in Fenics and can be found Here
 @author: loch
 """
 import fenics
