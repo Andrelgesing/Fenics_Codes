@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Nov 19 11:29:27 2018
-The variational formulation for the Euler-Bernoulli static equations was 
-implemented in Fenics and can be found Here
+
 @author: loch
 """
 import fenics
@@ -21,6 +20,13 @@ theta = fenics.Constant(-0.4) # Angle at x = 0
 M = fenics.Constant(1.0) # Momentum on the end of the cantilever x = 1
 Q = fenics.Constant(2.0) # Shear Force at x = 1
 f = fenics.Constant(5.0) # Force across the beam
+#
+#g = fenics.Constant(0.00) # Displacement at x = 0
+#theta = fenics.Constant(0.0) # Angle at x = 0
+#M = fenics.Constant(0.0) # Momentum on the end of the cantilever x = 1
+#Q = fenics.Constant(0.0) # Shear Force at x = 1
+#f = fenics.Constant(1.0) # Force across the beam
+
 #
 #g = fenics.Constant(0.05) # Displacement at x = 0
 #theta = fenics.Constant(-0.01) # Angle at x = 0
@@ -136,32 +142,55 @@ else:
 if Analytical:        
     Phi_Analytical = fenics.project(Phi_Expr, V)
 
-plt.figure(figsize = (10,3))
-fenics.plot(Phi, title = 'Displacement')
+plt.figure(figsize = (10,2.5))
+plt.title('Displacement', fontsize = 16)
+fenics.plot(Phi)
 if Analytical:
     fenics.plot(Phi_Analytical, linestyle = '-.')
-plt.legend(('C/DG', 'Analytical'))    
+plt.legend(('C/DG', 'Analytical'), fontsize = 14)  
+plt.xlabel('x', fontsize = 16)  
+plt.ylabel('$\phi$', fontsize = 16)  
 plt.xlim(0, 1)
-plt.figure(figsize = (10,3))
-fenics.plot(Phi.dx(0), title = 'Angle across the cantilever')
+plt.tight_layout()
+plt.savefig('Static_Displacement.pdf')
+
+plt.figure(figsize = (10,2.5))
+plt.title('Angle across the cantilever', fontsize = 16)
+fenics.plot(Phi.dx(0))
 if Analytical:
     fenics.plot(Phi_Analytical.dx(0), linestyle = '-.')
-plt.legend(('C/DG', 'Analytical'))    
+plt.legend(('C/DG', 'Analytical'), fontsize = 14)  
+plt.xlabel('x', fontsize = 16)  
+plt.ylabel('$\partial \phi/ \partial x$', fontsize = 16)  
 plt.xlim(0, 1)
-plt.figure(figsize = (10,3))
-fenics.plot(fenics.div(fenics.grad(Phi)), title = 'Moment across the cantilever')
+plt.tight_layout()
+plt.savefig('Static_Angle.pdf')
+
+
+
+plt.figure(figsize = (10,2.5))
+plt.title('Moment across the cantilever $(M = E\, I\, \partial^2 \phi/ \partial x^2)$', fontsize = 16)
+fenics.plot(fenics.div(fenics.grad(Phi)))
 if Analytical:
-    fenics.plot((Phi_Analytical.dx(0)).dx(0), linestyle = '-.')
-plt.legend(('C/DG', 'Analytical'))   
+    fenics.plot((E*I*Phi_Analytical.dx(0)).dx(0), linestyle = '-.')
+plt.legend(('C/DG', 'Analytical'), fontsize = 14)  
+plt.xlabel('x', fontsize = 16)  
+plt.ylabel('$M$', fontsize = 16)  
 plt.xlim(0, 1)
-plt.figure(figsize = (10,3))
-fenics.plot(fenics.div(fenics.grad(Phi)).dx(0), title = 'Shear Force across the cantilever')
+plt.tight_layout()
+plt.savefig('Static_Moment.pdf')
+
+plt.figure(figsize = (10,2.5))
+plt.title('Shear Force across the cantilever $(Q = E\, I\, \partial^3 \phi/ \partial x^3)$', fontsize = 16)
+fenics.plot(E*I*fenics.div(fenics.grad(Phi)).dx(0))
 if Analytical:
     fenics.plot(((Phi_Analytical.dx(0)).dx(0)).dx(0), linestyle = '-.')
-plt.legend(('C/DG', 'Analytical'))   
-plt.xlim(0., 1)
+plt.legend(('C/DG', 'Analytical'), fontsize = 14)  
+plt.xlabel('x', fontsize = 16)  
+plt.ylabel('$Q$', fontsize = 16)  
+plt.xlim(0, 1)
+plt.tight_layout()
+plt.savefig('Static_Shear_Force.pdf')
 plt.show()
-
-
 
 
