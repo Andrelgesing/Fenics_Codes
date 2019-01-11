@@ -10,19 +10,22 @@ import matplotlib.pyplot as plt
 
 
 # Define parameters
-E = fenics.Constant(1.)
-#L = 1. ;  H = 0.01 ;  
+E_ = 2E10
+L_ = 1 ;  H_ = 0.05 ; W_ = 0.1;  
+I_ = W_*H_**3/12.
 Nx = 200 
-I = fenics.Constant(1.)
-# Boundary conditions
-g = fenics.Constant(0.02) # Displacement at x = 0
-theta = fenics.Constant(-0.4) # Angle at x = 0
-M = fenics.Constant(1.0) # Momentum on the end of the cantilever x = 1
-Q = fenics.Constant(2.0) # Shear Force at x = 1
-f = fenics.Constant(5.0) # Force across the beam
 
-# Penalty parameter
-alpha = E*I
+# Inertia Moment
+I = fenics.Constant(I_)
+E = fenics.Constant(E_)
+H = fenics.Constant(H_)
+W = fenics.Constant(W_)
+
+g = fenics.Constant(0.00) # Displacement at x = 0
+theta = fenics.Constant(0.0) # Angle at x = 0
+M = fenics.Constant(1.0) # Momentum on the end of the cantilever x = 1
+Q = fenics.Constant(0.0) # Shear Force at x = 1
+f = fenics.Constant(0.0) # Force across the beam
 
 # Next, some parameters for the form compiler are set:
 # Optimization options for the form compiler
@@ -35,38 +38,27 @@ fenics.parameters["ghost_mode"] = "shared_facet"
 mesh = fenics.UnitIntervalMesh(Nx)
 
 # Create a function  space Using Continus Galerkin functions
-V = fenics.FunctionSpace(mesh, "Lagrange", 5)
-S = fenics.FunctionSpace(mesh, "Lagrange", 5)
+V = fenics.FunctionSpace(mesh, "Lagrange", 4)
 tol = 1E-14
 
 # Define boundary condition
 def left(x, on_boundary):
     return on_boundary and fenics.near(x[0], 0, tol)
-def right(x, on_boundary):
-    return on_boundary and fenics.near(x[0], 1, tol)
 
-
-# Define test function
-bc = fenics.DirichletBC(S, 0, right)
-w = fenics.TestFunction(S) # Is this the weigthing function in this case?
-            
-# Define trial function
+# Define trial function and Test Function
 bc = fenics.DirichletBC(V, g, left)
-Phi = fenics.TrialFunction(V) # Trial function
-
+Phi = fenics.TrialFunction(V) 
+w = fenics.TestFunction(V) 
 
 ##### Neumann
 class BoundaryX0(fenics.SubDomain):
         def inside(self, x, on_boundary):
             tol = 1e-14
             return on_boundary and fenics.near(x[0], 0, tol)
-#            return on_boundary and fenics.near(x[0], 0, 5e11*tol)
 
 class BoundaryX1(fenics.SubDomain):
         def inside(self, x, on_boundary):
             tol = 1e-14
-#            return x[0] >= 0.5 + tol
-#            return fenics.near(x[0], 1, 5e11*tol)
             return on_boundary and fenics.near(x[0], 1, tol)
             
 ################ FacetFunction doesn't exist, maybe MeshFunction works 
@@ -87,7 +79,9 @@ for x in mesh.coordinates():
 h = fenics.CellDiameter(mesh)
 h_avg = (h('+') + h('-'))/2.0
 n = fenics.FacetNormal(mesh)
- 
+# Penalty parameter
+alpha = E*I
+# Bilinear form
 B = fenics.inner(fenics.div(fenics.grad(w)),E*I*fenics.div(fenics.grad(Phi)))*fenics.dx \
 - (fenics.jump(fenics.grad(w), n)*E*I*fenics.avg(fenics.div(fenics.grad(Phi))))*fenics.dS \
 - (E*I*fenics.avg(fenics.div(fenics.grad(w)))*fenics.jump(fenics.grad(Phi),n))*fenics.dS \
@@ -134,7 +128,7 @@ plt.xlabel('x', fontsize = 16)
 plt.ylabel('$\phi$', fontsize = 16)  
 plt.xlim(0, 1)
 plt.tight_layout()
-plt.savefig('Static_Displacement.pdf')
+plt.savefig('PDF/Static_Displacement.pdf')
 
 plt.figure(figsize = (10,2.5))
 plt.title('Angle across the cantilever', fontsize = 16)
@@ -146,21 +140,19 @@ plt.xlabel('x', fontsize = 16)
 plt.ylabel('$\partial \phi/ \partial x$', fontsize = 16)  
 plt.xlim(0, 1)
 plt.tight_layout()
-plt.savefig('Static_Angle.pdf')
-
-
+plt.savefig('PDF/Static_Angle.pdf')
 
 plt.figure(figsize = (10,2.5))
 plt.title('Moment across the cantilever $(M = E\, I\, \partial^2 \phi/ \partial x^2)$', fontsize = 16)
-fenics.plot(fenics.div(fenics.grad(Phi)))
+fenics.plot(E*I*fenics.div(fenics.grad(Phi)))
 if Analytical:
-    fenics.plot((E*I*Phi_Analytical.dx(0)).dx(0), linestyle = '-.')
+    fenics.plot((E_*I_*Phi_Analytical.dx(0)).dx(0), linestyle = '-.')
 plt.legend(('C/DG', 'Analytical'), fontsize = 14)  
 plt.xlabel('x', fontsize = 16)  
 plt.ylabel('$M$', fontsize = 16)  
 plt.xlim(0, 1)
 plt.tight_layout()
-plt.savefig('Static_Moment.pdf')
+plt.savefig('PDF/Static_Moment.pdf')
 
 plt.figure(figsize = (10,2.5))
 plt.title('Shear Force across the cantilever $(Q = E\, I\, \partial^3 \phi/ \partial x^3)$', fontsize = 16)
@@ -172,5 +164,7 @@ plt.xlabel('x', fontsize = 16)
 plt.ylabel('$Q$', fontsize = 16)  
 plt.xlim(0, 1)
 plt.tight_layout()
-plt.savefig('Static_Shear_Force.pdf')
+plt.savefig('PDF/Static_Shear_Force.pdf')
 plt.show()
+
+
