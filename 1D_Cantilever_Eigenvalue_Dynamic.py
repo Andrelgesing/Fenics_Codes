@@ -13,7 +13,7 @@ import numpy as np
   
 N_eig = 5   # number of eigenvalues
 E_ = 2E10
-rho_ = 1E3
+rho_ = 1E4
 #rho = fenics.Constant(1.)
 L_ = 1 ;  H_ = 0.05 ; W_ = 0.1;  
 I_ = W_*H_**3/12.
