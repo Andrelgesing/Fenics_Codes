@@ -167,4 +167,3 @@ plt.tight_layout()
 plt.savefig('PDF/Static_Shear_Force.pdf')
 plt.show()
 
-
